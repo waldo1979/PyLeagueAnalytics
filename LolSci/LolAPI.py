@@ -6,7 +6,7 @@ import time
 from config import LolSciConfig
 
 
-class LolSession:
+class LolAPI:
     def __init__(self):
         lsc = LolSciConfig()
         self._rate_limit = self.set_ratelimit(lsc.requests_per_10min, lsc.requests_per_10sec)
@@ -50,34 +50,63 @@ class LolSession:
         return "https://" + self._endpoint + uri + "?api_key={0}".format(self._api_key)
 
     def get(self, uri):
-        self.do_wait()
+        self._do_wait()
         url = self.url(uri)
         r = self._sess.get(url)
-        return self.process_response(r)
 
-    def post(self, uri, args=[]):
-        self.do_wait()
-        url = self.url(uri)
-        r = self._sess.post(url, args)
-        return self.process_response(r)
-
-    def process_response(self, r):
         if r.status_code == 200:
             results = r.json()
         else:
             results = None
 
-        self.update_wait()
+        self._last_called = time.clock()
         return results
 
-    def do_wait(self):
+    def _do_wait(self):
         elapsed = time.clock() - self._last_called
         left_to_wait = self._rate_limit - elapsed
         if left_to_wait > 0:
             time.sleep(left_to_wait)
 
-    def update_wait(self):
-        self._last_called = time.clock()
+    def get_match_info(self, matchId):
+        url = self.url("/api/lol/{region}/v2.2/match/{matchId}".format(self.region, matchId))
+        result = self.get(url)
+        return result
+
+    def get_match_list(self, summonerId):
+        url = self.url("/api/lol/{region}/v2.2/matchlist/by-summoner/{summonerId}".format(self.region, summonerId))
+        result = self.get(url)
+        return result
+
+    def get_static_champion(self, championId=None):
+        url = self.get("/api/lol/static-data/{region}/v1.2/champion".format(self.region))
+        if championId:
+            url = url + "/{0}".format(championId)
+        result = self.get(url)
+        return result
+
+    def get_static_item(self, itemId=None):
+        url = self.url("/api/lol/static-data/{region}/v1.2/item".format(self.region))
+        if itemId:
+            url = url + "/{0}".format(itemId)
+        result = self.get(url)
+        return result
+
+    def get_static_mastery(self, masterId=None):
+        url = self.url("/api/lol/static-data/{region}/v1.2/mastery".format(self.region))
+        if masterId:
+            url = url + "/{0}".format(masterId)
+        result = self.get(url)
+        return result
+
+    def get_static_rune(self, runeId=None):
+        url = self.url("/api/lol/static-data/{region}/v1.2/rune".format(self.region))
+        if runeId:
+            url = url + "/{0}".format(runeId)
+        result = self.get(url)
+        return result
+
+
 
 if __name__ == "__main__":
     lr = LolSession()

@@ -1,1 +1,1 @@
-from LolSci.LolSession import LolSession
+from LolSci.LolAPI import LolAPI

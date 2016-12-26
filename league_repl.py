@@ -1,6 +1,6 @@
-from LolSci import LolSession
+from LolSci import LolAPI
 from ptpython.repl import embed
 
 if __name__ == '__main__':
-    ls = LolSession()
+    ls = LolAPI()
     embed(globals(), locals())
